@@ -3,7 +3,7 @@ import cv2
 import math
 from flask import Flask, render_template, request, Response
 from ultralytics import YOLO
-#from sort import * # TODO
+from sort import * # TODO
 
 class_names = ['Hardhat', 'Mask', 'NO-Hardhat', 'NO-Mask', 'NO-Safety Vest', 'Person', 'Safety Cone', 'Safety Vest', 'machinery', 'vehicle']
 
@@ -32,8 +32,9 @@ def detect_objects(model, frame):
                 cv2.rectangle(frame,(x1,y1),(x2,y2),(000,000,255),1)
                 cv2.putText(frame, text, (text_offset_x, text_offset_y), cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, color=(000,000,255), thickness=2)
             else:
-                cv2.rectangle(frame,(x1,y1),(x2,y2),(255,000,000),1)
-                cv2.putText(frame, text, (text_offset_x, text_offset_y), cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, color=(255,000,000), thickness=2)
+                pass
+                # cv2.rectangle(frame,(x1,y1),(x2,y2),(255,000,000),1)
+                # cv2.putText(frame, text, (text_offset_x, text_offset_y), cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, color=(255,000,000), thickness=2)
 
     return frame
 
@@ -41,8 +42,16 @@ def detect_objects(model, frame):
 def index():
     return render_template('index.html')
 
-def gen_frames(model, video_path):
+def gen_frames(model, video_path, title):
     cap = cv2.VideoCapture(video_path)
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    # create a VideoWriter object to write the processed frames to a video file
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+    out = cv2.VideoWriter(f'./output/{title}_output.mp4', fourcc, fps, (width, height))
+
 
     while True:
         # read a frame from the video
@@ -52,29 +61,36 @@ def gen_frames(model, video_path):
 
         # process the frame with YOLO
         frame = detect_objects(model, frame)
+        # write the processed frame to the output video file
+        out.write(frame)
 
         # convert the frame to JPEG format
         ret, buffer = cv2.imencode('.jpg', frame)
         frame = buffer.tobytes()
+
+
+
 
         # yield the frame in a Flask response
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
     cap.release()
+    out.release()
 
 @app.route('/video_feed')
 def video_feed():
     args = parse_args()
     model = YOLO(args.model)
+    title = args.video.split('/')[-1].split('.')[0]
     video_path = args.video
-    return Response(gen_frames(model, video_path), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(gen_frames(model, video_path,title), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 def parse_args():
     parser = argparse.ArgumentParser()
     print('parsing args ................')
-    parser.add_argument('-video', type=str, default='./sample.mp4', help='video path')
-    parser.add_argument('-model', type=str, default="./models/best.pt", help='path to YOLO model')
+    parser.add_argument('-video', type=str, default='./construction_site_example_2.mp4', help='video path')
+    parser.add_argument('-model', type=str, default="./models/best_10Class_20Epochs.pt", help='path to YOLO model')
     args = parser.parse_args()
     return args
 

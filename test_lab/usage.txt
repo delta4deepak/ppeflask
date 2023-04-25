@@ -1,0 +1,16 @@
+##
+python predict.py -urls http://sagamiharagreen.miemasu.net/nphMotionJpeg?Resolution=640x480&Quality=Clarity
+
+python predict.py -device 0
+
+python predict.py -im ./sample.jpg
+
+python predict.py -video ./sample.mp4
+
+
+get ip cam links from http://www.opentopia.com/webcam for testing
+
+
+##to run image after build
+
+docker run myimage -img /path/to/image

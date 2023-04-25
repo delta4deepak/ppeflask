@@ -1,0 +1,44 @@
+#https://www.youtube.com/watch?v=gRAyOPjQ9_s
+#https://www.youtube.com/watch?v=WgPbbWmnXJ8 
+#https://github.com/abewley/sort/blob/master/sort.py 
+conda create -n yolov8_ppe_detection python=3.9
+conda activate yolov8_ppe_detection
+
+#these not necessary when dockerizing
+pip install simple_image_download==0.4
+pip install labelImg  #select the right model. the name that shows is the model selected
+
+
+pip install ultralytics
+pip install hyperopt==0.2.7
+pip install google-cloud-pubsub==2.8.0
+
+#conda install pytorch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 pytorch-cuda=11.7 -c pytorch -c nvidia
+#pip3 install --upgrade torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu117
+pip3 install --upgrade torch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 --index-url https://download.pytorch.org/whl/cu117
+#pip uninstall request
+#pip install requests
+pip install brotli
+
+yolo detect train epochs=100 data=data_custom.yaml model=yolov8m.pt imgsz=640
+
+yolo task=detect mode=predict model=best.pt show=True conf=0.5 source=D:\Projects\yolov8_ppe_detection\worker_(420).jpg line_thickness=1
+
+for SORT:
+filterpy==1.4.5
+scikit-image==0.17.2
+lap==0.4.0
+
+Ubuntu
+
+sudo apt install python3-pip
+sudo pip install virtualenv
+source ./yolov8ppe/bin/activate
+
+
+pip install ultralytics
+pip install brotli
+yolo task=detect mode=predict model=best.pt show=True conf=0.5 source=./worker_420.jpg line_thickness=1
+
+
+pip install pyside6

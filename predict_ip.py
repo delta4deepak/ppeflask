@@ -62,7 +62,11 @@ def index():
     args = parse_args()
     global CAMERAS
     print('In index')
-    # urls = ["http://statenisland.dnsalias.net/mjpg/video.mjpg","http://pendelcam.kip.uni-heidelberg.de/mjpg/video.mjpg","http://129.125.136.20/axis-cgi/mjpg/video.cgi?camera=1","http://amuse.miemasu.net/nphMotionJpeg?Resolution=640x480&Quality=Clarity","http://sunds.tobit.net/cgi-bin/faststream.jpg?stream=full&fps=0"]
+    # urls = ["http://statenisland.dnsalias.net/mjpg/video.mjpg",
+    # "http://pendelcam.kip.uni-heidelberg.de/mjpg/video.mjpg",
+    # "http://129.125.136.20/axis-cgi/mjpg/video.cgi?camera=1",
+    # "http://amuse.miemasu.net/nphMotionJpeg?Resolution=640x480&Quality=Clarity",
+    # "http://sunds.tobit.net/cgi-bin/faststream.jpg?stream=full&fps=0"]
     urls = [url for url in args.urls]
     CAMERAS = urls
     return render_template('index_ip.html', camera_list=len(CAMERAS), camera=CAMERAS) #send list to html

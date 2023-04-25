@@ -1,0 +1,85 @@
+##normal docker installation (source [tried and verified : https://kinsta.com/blog/install-docker-ubuntu/ )
+
+
+sudo apt update 
+sudo apt install ca-certificates curl gnupg lsb-release
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt update
+sudo apt install docker-ce docker-ce-cli containerd.io
+
+#This would make updating the docker easier from apt
+
+#domains contacted
+esm.ubuntu.com
+_https._tcp.esm.ubuntu.com
+security.ubuntu.com
+in.archive.ubuntu.com
+_http._tcp.in.archive.ubuntu.com
+_http._tcp.security.ubuntu.com
+security.ubuntu.com
+download.docker.com
+get.docker.com
+
+
+##Downloading binaries/packages
+curl https://download.docker.com/linux/ubuntu/dists/$(lsb_release --codename | cut -f2)/pool/stable/$(dpkg --print-architecture)/docker-ce_23.0~3-0~ubuntu-focal_amd64.deb -o docker-ce.deb
+
+curl https://download.docker.com/linux/ubuntu/dists/$(lsb_release --codename | cut -f2)/pool/stable/$(dpkg --print-architecture)/decho "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/nullocker-ce-cli_23.0~3-0~ubuntu-focal_amd64.deb -o docker-ce-cli.deb
+
+curl https://download.docker.com/linux/ubuntu/dists/$(lsb_release --codename | cut -f2)/pool/stable/$(dpkg --print-architecture)/containerd.io_1.6.20-1_amd64.deb -o containerd.deb
+
+sudo apt install ./docker-ce.deb ./docker-ce-cli.deb ./containerd.deb
+
+#domains contacted
+download.docker.com
+
+##Using Script
+
+curl -fsSL https://get.docker.com -o get-docker.sh
+get.docker.com
+
+#pulling the docker image
+sudo docker pull speedlights/ppe_detector
+sudo docker run -it speedlights/ppe_detector -video './sample.mp4'
+
+speedlights/ppe_detector   latest    e845ce7105ad   30 hours ago    8.85GB
+display wont work : https://l10nn.medium.com/running-x11-applications-with-docker-75133178d090
+
+#contacted domains
+registry-1.docker.io
+docker.io
+
+## Installing packages directly using pip
+
+sudo apt install python3-pip
+sudo apt install python3-virtualenv
+virtualenv ppe_detection
+source ppe_detection/bin/activate
+
+pip install ultralytics
+  - Installing collected packages: 
+pytz, mpmath, lit, cmake, urllib3, tzdata, typing-extensions, tqdm, sympy, six, PyYAML, pyparsing, psutil, Pillow, packaging, nvidia-nvtx-cu11, nvidia-nccl-cu11, nvidia-cusparse-cu11, nvidia-curand-cu11, nvidia-cufft-cu11, nvidia-cuda-runtime-cu11, nvidia-cuda-nvrtc-cu11, nvidia-cuda-cupti-cu11, nvidia-cublas-cu11, numpy, networkx, MarkupSafe, kiwisolver, idna, fonttools, filelock, cycler, charset-normalizer, certifi, sentry-sdk, scipy, requests, python-dateutil, opencv-python, nvidia-cusolver-cu11, nvidia-cudnn-cu11, jinja2, contourpy, pandas, matplotlib, seaborn, triton, torch, torchvision, thop, ultralytics
+
+probably downloaded 3GB+ files
+pip install brotli
+
+The env folder was 5GB
+
+filterpy==1.4.5
+scikit-image==0.17.2 but didnt work so installed latest 0.20
+lap==0.4.0
+
+
+#live cams 
+http://www.opentopia.com/hiddencam.php?country=United%20States
+change round() in ip camera py to torch.round()
+
+#contacted domains
+pypi.org
+pythonhosted.org
+files.pythonhosted.org
+
+
