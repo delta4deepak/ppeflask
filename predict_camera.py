@@ -68,7 +68,7 @@ def video_feed():
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-device', type=int, default=0, help='camera id')
-    parser.add_argument('-model', type=str, default="./models/best_10Class_20Epochs.pt", help='model path')  
+    parser.add_argument('-model', type=str, default="./models/best_10Class_100Epochs.pt", help='model path')  
     args = parser.parse_args()
     return args
 

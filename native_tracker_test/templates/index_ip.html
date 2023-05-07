@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Multi-Camera Object Detection</title>
+    <style>
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .grid-item {
+            position: relative;
+        }
+
+        .grid-item img {
+            width: 100%;
+            height: 100%;
+        }
+
+        .grid-item .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: end;
+            align-items: center;
+            background-color: rgba(1, 1, 1, 0);
+            color: red;
+            font-size: 1.5rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-container">
+
+        {% for camera_number in range(0, camera_list) %}
+        <div class="grid-item">
+            <div class="overlay">
+                <p>Camera {{camera_number }}</p>
+            </div>
+            <img src="{{ url_for('video_feed', list_id=camera_number) }}" width="100%"><br/>
+
+        </div>
+        {% endfor %}
+
+        <!-- {% for camera in cameras %}
+        <div class="grid-item">
+            <img src="{{ url_for('video_feed') }}" alt="{{camera}}">
+            <div class="overlay">
+                <p>Camera {{ camera }}</p>
+            </div>
+        </div>
+        {% endfor %} -->
+    </div>
+</body>
+
+</html>

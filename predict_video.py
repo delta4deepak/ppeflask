@@ -42,16 +42,18 @@ def detect_objects(model, frame):
 def index():
     return render_template('index.html')
 
-def gen_frames(model, video_path, title):
+def gen_frames(model, video_path, title, save):
     cap = cv2.VideoCapture(video_path)
-    fps = cap.get(cv2.CAP_PROP_FPS)
-    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    fps = height = width = fourcc = out = None
+    if save: 
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
 
-    # create a VideoWriter object to write the processed frames to a video file
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    out = cv2.VideoWriter(f'./output/{title}_output.mp4', fourcc, fps, (width, height))
-
+        # create a VideoWriter object to write the processed frames to a video file
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        out = cv2.VideoWriter(f'./output/{title}_output.mp4', fourcc, fps, (width, height))
+        print(f'Saving the video as ./output/{title}_output.mp4')
 
     while True:
         # read a frame from the video
@@ -62,21 +64,18 @@ def gen_frames(model, video_path, title):
         # process the frame with YOLO
         frame = detect_objects(model, frame)
         # write the processed frame to the output video file
-        out.write(frame)
+        if save : out.write(frame)
 
         # convert the frame to JPEG format
         ret, buffer = cv2.imencode('.jpg', frame)
         frame = buffer.tobytes()
-
-
-
 
         # yield the frame in a Flask response
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
     cap.release()
-    out.release()
+    if save : out.release()
 
 @app.route('/video_feed')
 def video_feed():
@@ -84,13 +83,14 @@ def video_feed():
     model = YOLO(args.model)
     title = args.video.split('/')[-1].split('.')[0]
     video_path = args.video
-    return Response(gen_frames(model, video_path,title), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(gen_frames(model, video_path,title,args.save), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 def parse_args():
     parser = argparse.ArgumentParser()
     print('parsing args ................')
-    parser.add_argument('-video', type=str, default='./construction_site_example_2.mp4', help='video path')
-    parser.add_argument('-model', type=str, default="./models/best_10Class_20Epochs.pt", help='path to YOLO model')
+    parser.add_argument('-video', type=str, default='./sample.mp4', help='video path')
+    parser.add_argument('-model', type=str, default="./models/best_10Class_100Epochs.pt", help='path to YOLO model')
+    parser.add_argument('-save',type=int, default=0 , help='bool to save or not')
     args = parser.parse_args()
     return args
 

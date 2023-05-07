@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<head>
+
+
+</head>
+<body>
+
+    {% for camera_number in range(0, camera_list) %}
+    <div>
+        <img src="{{ url_for('video_feed', list_id=camera_number) }}" width="100%"><br/>
+    </div>
+{% endfor %}
+
+</body>
