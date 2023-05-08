@@ -6,6 +6,8 @@ import torch
 import argparse
 import supervision as sv
 from nomask import *
+from novest import *
+from nohat import *
 
 CAMERAS = []
 
@@ -17,13 +19,17 @@ box_annotator = sv.BoxAnnotator(
     text_thickness=1,
     text_scale=0.5
 )
+notified = []
 
 no_mask = []
+no_vest = []
+no_hat = []
+
 def find_camera(list_id):
     return CAMERAS[int(list_id)]
 
 def generate_frames(model, src,id):
-    global no_mask
+    global no_mask,no_vest,no_hat,notified
     for result in model.track(source = src, stream=True):
         frame = result.orig_img
         detections = sv.Detections.from_yolov8(result)      
@@ -36,17 +42,45 @@ def generate_frames(model, src,id):
                                     & (detections.class_id != 8) & (detections.class_id != 9)
                                 & (detections.class_id != 4)  
                                 ]
-        no_mask[id] = no_mask_person(no_mask[id],result,detections)
-        detections = detections[(detections.class_id != 3)]  #to only show person related boxes
+        # no_mask[id] = no_mask_person(no_mask[id],result,detections)
+        # detections = detections[(detections.class_id != 3)]  #to only show person related boxes
        
+        no_mask[id] = no_mask_person(no_mask[id],result,detections)
+        no_vest[id] = no_vest_person(no_vest[id],result,detections)
+        no_hat[id] = no_hat_person(no_hat[id],result,detections)
+
+        detections = detections[(detections.class_id != 3) & (detections.class_id != 4) & (detections.class_id != 2)]  #to only show person related boxes
+
         labels = []
+
+
         for _, confidence, class_id, tracker_id in detections:
-                    if tracker_id in no_mask[id]:
-                        # labels.append(f" {model.model.names[class_id]} {tracker_id} not wearing mask")
-                        labels.append(f"Not wearing mask")
-                    # else:
-                    #     labels.append(f" {model.model.names[class_id]} {tracker_id} ")
-        detections = detections[(detections.class_id != 5)]  #to only show person related boxes
+                    if tracker_id in no_mask[id] and tracker_id in no_vest[id] and tracker_id in no_hat[id]:
+                        message = f" {model.model.names[class_id]} {tracker_id} not wearing mask, safety vest and hardhat"
+                        labels.append(message)
+                        if tracker_id not in notified: notified.append(tracker_id)
+                                
+                    elif tracker_id in no_mask[id] and tracker_id not in no_vest[id] and tracker_id not in no_hat[id]:
+                        labels.append(f" {model.model.names[class_id]} {tracker_id} not wearing mask")
+                        if tracker_id not in notified: notified.append(tracker_id)
+                    elif tracker_id not in no_mask[id] and tracker_id in no_vest[id] and tracker_id not in no_hat[id]:
+                        labels.append(f" {model.model.names[class_id]} {tracker_id} not wearing safety vest")
+                        if tracker_id not in notified: notified.append(tracker_id)
+                    elif tracker_id not in no_mask[id] and tracker_id not in no_vest[id] and tracker_id in no_hat[id]:
+                        labels.append(f" {model.model.names[class_id]} {tracker_id} not wearing hardhat")
+                        if tracker_id not in notified: notified.append(tracker_id)
+                    elif tracker_id in no_mask[id] and tracker_id in no_vest[id] and tracker_id not in no_hat[id]:
+                        labels.append(f" {model.model.names[class_id]} {tracker_id} not wearing mask and safety vest")
+                        if tracker_id not in notified: notified.append(tracker_id)
+                    elif tracker_id in no_mask[id] and tracker_id not in no_vest[id] and tracker_id in no_hat[id]:
+                        labels.append(f" {model.model.names[class_id]} {tracker_id} not wearing mask and hardhat")
+                        if tracker_id not in notified: notified.append(tracker_id)
+                    elif tracker_id not in no_mask[id] and tracker_id in no_vest[id] and tracker_id in no_hat[id]:
+                        labels.append(f" {model.model.names[class_id]} {tracker_id} not wearing hardhat and safetyvest")
+                        if tracker_id not in notified: notified.append(tracker_id)
+                    else:
+                        labels.append(f" {model.model.names[class_id]} {tracker_id} ")
+
 
         frame = box_annotator.annotate(
                 scene=frame, 
@@ -62,19 +96,21 @@ def generate_frames(model, src,id):
 
 @app.route('/', methods=["GET"])
 def index():
-    global no_mask
+    global no_mask,no_hat,no_vest
     args = parse_args()
     global CAMERAS
     print('In index')
-    # urls = ["http://statenisland.dnsalias.net/mjpg/video.mjpg",
-    # "http://pendelcam.kip.uni-heidelberg.de/mjpg/video.mjpg",
-    # "http://129.125.136.20/axis-cgi/mjpg/video.cgi?camera=1",
-    # "http://cam-stadthaus.dacor.de/cgi-bin/faststream.jpg?stream=full&fps=0"
-    # "http://sunds.tobit.net/cgi-bin/faststream.jpg?stream=full&fps=0"]
+    urls = ["http://statenisland.dnsalias.net/mjpg/video.mjpg",
+    "http://pendelcam.kip.uni-heidelberg.de/mjpg/video.mjpg",
+    "http://129.125.136.20/axis-cgi/mjpg/video.cgi?camera=1",
+    "http://cam-stadthaus.dacor.de/cgi-bin/faststream.jpg?stream=full&fps=0"
+    "http://sunds.tobit.net/cgi-bin/faststream.jpg?stream=full&fps=0"]
     # urls = [url for url in args.urls]
-    urls = ['./samples/sample.mp4','./samples/construction_site_example.mp4','samples/construction_site_example_2.mp4']
+    # urls = ['./samples/sample.mp4','./samples/sample.mp4']
     CAMERAS = urls
     no_mask = [ [] for _ in range(len(CAMERAS)) ]
+    no_hat = [ [] for _ in range(len(CAMERAS)) ]
+    no_vest = [ [] for _ in range(len(CAMERAS)) ]
     return render_template('index_ip.html', camera_list=len(CAMERAS), camera=CAMERAS) #send list to html
 
 import time
@@ -82,15 +118,8 @@ i = 0
 @app.route('/video_feed/<string:list_id>/', methods=["GET"]) #receives index from html
 def video_feed(list_id):
     print('IN video feed')
-    global i
     id = int(list_id)
-    # caps = [cv2.VideoCapture(url) for url in CAMERAS]
-    print(CAMERAS)
-    
     models = [YOLO("./models/best_10Class_100Epochs.pt") for _ in range(len(CAMERAS))]
-    print(f'$$$$$$$$$$$$$$$$$$$$$$$$$$      {i}       $$$$$$$$$$$$$$$$$$$$$$$$$$$$$')
-    i+=1
-    # time.sleep(5) 
     return Response(generate_frames(models[id], CAMERAS[id],id), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 def parse_args():

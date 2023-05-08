@@ -92,7 +92,7 @@ def detect_objects(result,model,frame):
 def index():
     return render_template('index.html')
 
-def gen_frames(model, video_path, title, save):
+def gen_frames(model, video_path):
 
     for result in model.track(source = video_path, stream=True):
         frame = result.orig_img
@@ -106,16 +106,15 @@ def gen_frames(model, video_path, title, save):
 def video_feed():
     args = parse_args()
     model = YOLO(args.model)
-    title = args.video.split('/')[-1].split('.')[0]
     video_path = args.video
-    return Response(gen_frames(model, video_path,title,args.save), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(gen_frames(model, video_path), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 def parse_args():
     parser = argparse.ArgumentParser()
     print('parsing args ................')
-    parser.add_argument('-video', type=str, default='./sample.mp4', help='video path')
+    parser.add_argument('-video', type=str, default='https://www.youtube.com/watch?v=q-OVSJbhpNY', help='video path')
     parser.add_argument('-model', type=str, default="../models/best_10Class_100Epochs.pt", help='path to YOLO model')
-    parser.add_argument('-save',type=int, default=0 , help='bool to save or not')
+    # parser.add_argument('-save',type=int, default=0 , help='bool to save or not')
     args = parser.parse_args()
     return args
 
