@@ -32,7 +32,7 @@ def detect_objects(result,model,frame):
 
     if result.boxes.id is not None:
             detections.tracker_id = result.boxes.id.cpu().numpy().astype(int)
-
+    print(detections)
     detections = detections[(detections.class_id != 1) & (detections.class_id != 0) 
                                     & (detections.class_id != 6) & (detections.class_id != 7)
                                 & (detections.class_id != 8) & (detections.class_id != 9)    
@@ -112,7 +112,7 @@ def video_feed():
 def parse_args():
     parser = argparse.ArgumentParser()
     print('parsing args ................')
-    parser.add_argument('-video', type=str, default='https://www.youtube.com/watch?v=q-OVSJbhpNY', help='video path')
+    parser.add_argument('-video', type=str, default='./sample.mp4', help='video path')
     parser.add_argument('-model', type=str, default="../models/best_10Class_100Epochs.pt", help='path to YOLO model')
     # parser.add_argument('-save',type=int, default=0 , help='bool to save or not')
     args = parser.parse_args()
